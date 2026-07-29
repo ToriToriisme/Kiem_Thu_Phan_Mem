@@ -1,0 +1,251 @@
+.client-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 72px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+}
+
+.navbar-container {
+  width: 100%;
+  max-width: 1300px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 32px;
+  height: 100%;
+}
+
+.navbar-logo {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #111827;
+  text-decoration: none;
+  letter-spacing: -0.5px;
+}
+
+.navbar-menu {
+  display: flex;
+  list-style: none;
+  gap: 32px;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.navbar-menu li {
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-menu a {
+  color: #4b5563;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.navbar-menu a:hover {
+  color: #111827;
+}
+
+.navbar-menu a.active {
+  color: #111827;
+  font-weight: 600;
+}
+
+.navbar-menu a.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; /* Align with border-bottom */
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #111827;
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.search-bar-client {
+  display: flex;
+  align-items: center;
+  background-color: #f3f4f6;
+  border-radius: 6px;
+  padding: 8px 16px;
+  width: 220px;
+}
+
+.search-bar-client .search-icon {
+  color: #6b7280;
+  margin-right: 8px;
+}
+
+.search-bar-client input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-size: 0.9rem;
+  color: #374151;
+  outline: none;
+}
+
+.icon-btn-client {
+  background: transparent;
+  border: none;
+  color: #4b5563;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.icon-btn-client:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+/* User Dropdown */
+.user-dropdown-container {
+  position: relative;
+}
+
+.user-avatar-btn {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+.user-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  width: 240px;
+  z-index: 1001;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.user-dropdown-header {
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.user-dropdown-name {
+  margin: 0 0 4px 0;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+.user-dropdown-email {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-dropdown-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px 0;
+}
+
+.user-dropdown-list li {
+  margin: 0;
+  padding: 0;
+}
+
+.user-dropdown-list a,
+.user-dropdown-list button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-size: 0.9rem;
+  color: #4b5563;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.user-dropdown-list a:hover,
+.user-dropdown-list button:hover {
+  background: #f9fafb;
+  color: #111827;
+}
+
+.dropdown-icon {
+  font-size: 1.1rem;
+  color: #6b7280;
+}
+
+.user-dropdown-list a:hover .dropdown-icon,
+.user-dropdown-list button:hover .dropdown-icon {
+  color: #111827;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 4px 0;
+}
+
+.logout-btn {
+  color: #dc2626 !important;
+}
+
+.logout-btn .dropdown-icon {
+  color: #dc2626 !important;
+}
+
+.logout-btn:hover {
+  background: #fef2f2 !important;
+}
+
+/* Login Link Box */
+.login-link-box {
+  background-color: #111827;
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.login-link-box:hover {
+  background-color: #374151;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}

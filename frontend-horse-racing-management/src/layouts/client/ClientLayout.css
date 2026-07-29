@@ -1,0 +1,14 @@
+.client-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #fafafa; /* Very light gray/white background */
+  color: #111827;
+}
+
+.client-main {
+  flex: 1;
+  padding-top: 72px; /* Height of the white navbar */
+  width: 100%;
+  margin: 0 auto;
+}
