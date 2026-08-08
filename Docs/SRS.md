@@ -1,14 +1,14 @@
 # SOFTWARE REQUIREMENTS SPECIFICATION (SRS) & TESTING DOCUMENTATION
 ## Dự án: Horse Racing Management System
 > **Môn học:** Kiểm Chứng Phần Mềm (Software Testing)  
-> **Phiên bản:** 1.2  
+> **Phiên bản:** 2.0  
 > **Cập nhật mới nhất:** 2026-08-08  
 
 ---
 
 ## I. TỔNG QUAN PHÂN CÔNG THÀNH VIÊN & MÔI TRƯỜNG DỰ ÁN
 
-### 1. Phân công Công việc & Tiến độ Thành viên
+### 1. Phân công Công việc & Tiến độ Sprint 1 (Đã hoàn tất)
 * **Thành viên 1 & 2:** Backend Architecture, Spring Boot REST APIs, Security Config & MongoDB Atlas Integration.
 * **Thành viên 3 (Frontend & Manual Blackbox Testing):**
   * **Môi trường:** 
@@ -66,9 +66,7 @@ Bộ kịch bản kiểm thử bảo mật API kiểm tra cơ chế phân quyề
   "info": {
     "_postman_id": "c3b20229-0315-474b-9162-3748f8090d39",
     "name": "KCPM_Test",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "56891216",
-    "_collection_link": "https://go.postman.co/collection/56891216-c3b20229-0315-474b-9162-3748f8090d39?source=collection_link"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     { "name": "TC-SEC-01", "description": "Test phân quyền với Token Chủ ngựa / User" },
@@ -100,7 +98,7 @@ Bộ kịch bản kiểm thử bảo mật API kiểm tra cơ chế phân quyề
 * **Phân tích kỹ thuật:** Chuỗi bộ lọc `Spring Security FilterChain` hiện tại thiếu cấu hình custom `AccessDeniedHandler` để phân biệt rõ ràng:
   * **401 Unauthorized (Unauthenticated):** Chưa đăng nhập, thiếu token, hoặc token không hợp lệ / hết hạn.
   * **403 Forbidden (Unauthorized/Access Denied):** Đã đăng nhập hợp lệ nhưng tài khoản không có đủ thẩm quyền thực thi API đó.
-* **Giải pháp khắc phục cho Sprint tiếp theo:**
+* **Giải pháp khắc phục:**
   Bổ sung custom `AccessDeniedHandler` trong `SecurityConfig.java`:
   ```java
   .exceptionHandling(exception -> exception
@@ -110,3 +108,41 @@ Bộ kịch bản kiểm thử bảo mật API kiểm tra cơ chế phân quyề
           response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden: You do not have permission to access this resource"))
   )
   ```
+
+---
+
+## V. KẾ HOẠCH & MỤC TIÊU SPRINT 2 (CORE ENTITIES & DETAILED TESTING)
+
+### 1. Tổng quan Sprint 2
+* **Phân hệ trọng tâm:** Core Entities (Ngựa, Nài Ngựa, Giải Đấu & Chặng Đua).
+* **Mục tiêu:** Triển khai và kiểm thử hoàn chỉnh các chức năng cốt lõi (CRUD) liên quan đến các thực thể chính của hệ thống: Ngựa (`Horses`), Nài ngựa (`Jockeys`), Giải đấu (`Tournaments`) và Chặng đua (`Races`).
+
+### 2. Phân công Chi tiết & Các Hạng mục Cần Hoàn thành (K2-6 đến K2-9)
+
+#### 🔹 Thành viên 1: Backend & Unit Testing Specialist (Task: K2-6)
+* **Nhiệm vụ chính:** Phát triển và viết Unit Test (JUnit 5 & Mockito) cho các service quản lý thực thể.
+* **Hạng mục công việc chi tiết:**
+  * **Unit Test cho `HorseService`:** Viết test case tạo mới Ngựa; kiểm tra các ràng buộc dữ liệu đầu vào (VD: Tuổi ngựa phải hợp lệ > 0, các trường bắt buộc không được rỗng).
+  * **Unit Test cho `JockeyService`:** Viết trọn bộ test CRUD cho Nài ngựa (kiểm tra tính hợp lệ của số giấy phép hành nghề, năm kinh nghiệm >= 0).
+  * **Unit Test cho `TournamentService` & `RaceService`:** Kiểm thử logic tạo Giải đấu (validate ngày bắt đầu phải trước ngày kết thúc) và tạo Chặng đua thuộc giải đấu.
+
+#### 🔹 Thành viên 2: API & Integration Testing Specialist (Task: K2-7)
+* **Nhiệm vụ chính:** Kiểm thử tích hợp tầng Controller và chuẩn hóa các request trên Postman.
+* **Hạng mục công việc chi tiết:**
+  * **Chuẩn hóa Prefix Route trên Postman:** Thay đổi toàn bộ các route gọi thực thể từ `/api/horses`, `/api/jockeys` thành `/api/v1/horses` và `/api/v1/jockeys`.
+  * **Integration Test (`@SpringBootTest`, `MockMvc` / `MockMvcTester`):** Gửi request tạo Ngựa/Nài ngựa và xác minh dữ liệu được lưu thành công vào MongoDB (hoặc in-memory DB phục vụ test).
+  * **Viết Assertions tự động trên Postman:** Thiết lập script kiểm tra mã trạng thái trả về (`200 OK`, `201 Created`) và tự động lưu `tournamentId` sau khi tạo thành công để truyền cho API tạo chặng đua.
+
+#### 🔹 Thành viên 3: Frontend & Manual Testing Specialist (Task: K2-8)
+* **Nhiệm vụ chính:** Thực thi kiểm thử thủ công hộp đen (Blackbox Manual Test) trên UI đối với giao diện quản trị và chủ ngựa.
+* **Hạng mục công việc chi tiết:**
+  * **Manual Test màn hình Owner Dashboard:** Áp dụng kỹ thuật Phân hoạch lớp tương đương (EP) và Phân tích giá trị biên (BVA) để nhập liệu các trường Tuổi ngựa, năm kinh nghiệm nài ngựa trên UI.
+  * **Manual Test màn hình Admin Dashboard (Tạo giải đấu & chặng đua):** Kiểm tra giao diện xem có hiển thị đúng thông báo lỗi khi Admin chọn ngày bắt đầu giải đấu muộn hơn ngày kết thúc hay không.
+  * **Kiểm tra Network Tab (F12):** Đảm bảo UI gửi đúng cấu trúc DTO xuống Backend và hiển thị dữ liệu chính xác sau khi tải lại trang.
+
+#### 🔹 Thành viên 4: Security & QA Specialist (Task: K2-9)
+* **Nhiệm vụ chính:** Kiểm thử bảo mật phân quyền (RBAC/JWT) và kiểm thử phi chức năng (Performance/Load Testing).
+* **Hạng mục công việc chi tiết:**
+  * **Security Testing (RBAC & JWT):** Viết các lớp kiểm thử tích hợp dùng `@WithMockUser` hoặc Postman đính kèm Token Khán giả (`ROLE_SPECTATOR`) / Nài ngựa (`ROLE_JOCKEY`) để gọi API Admin tạo giải đấu (`POST /api/admin/tournaments`) hoặc chặng đua. Xác minh kết quả trả về phải là `HTTP 403 Forbidden`. Đồng thời gửi request chứa Token hết hạn hoặc chữ ký bị sửa đổi để kiểm tra bộ lọc `JwtAuthenticationFilter` chặn với mã `HTTP 401 Unauthorized`.
+  * **Performance & Load Testing:** Sử dụng công cụ sinh tải (JMeter hoặc Postman Collection Runner) giả lập gửi đồng thời nhiều request tạo mới Ngựa/Nài ngựa. Đo lường Response Time và kiểm tra tính ổn định của kết nối MongoDB.
+  * **QA Defect & Log Analysis:** Tiếp nhận báo cáo lỗi thô từ Thành viên 2 (API) và Thành viên 3 (Manual UI). Chạy tái tạo lỗi (Reproduce) dưới local, bóc tách log console và MongoDB stack trace để tìm chính xác dòng code bị lỗi, sau đó tạo Bug Ticket chi tiết lên Jira.
