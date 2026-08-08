@@ -1,0 +1,589 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-1234567890ab",
+		"name": "Horse Racing Management System API (Đầy đủ 8 phần)",
+		"description": "Bộ Postman Collection đầy đủ 8 phần bao phủ 100% Endpoints của dự án Horse Racing Management System",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Phần 1: Authentication & Users (Xác thực & Người dùng)",
+			"item": [
+				{
+					"name": "1.1 Register (Đăng ký)",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"testuser@gmail.com\",\n  \"password\": \"123456\",\n  \"fullName\": \"Nguyen Van A\",\n  \"role\": \"USER\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "1.2 Login (Đăng nhập)",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "1.3 Get All Users",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/users",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users"]
+						}
+					}
+				},
+				{
+					"name": "1.4 Get User By ID",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/users/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "1"]
+						}
+					}
+				},
+				{
+					"name": "1.5 Delete User",
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{baseUrl}}/api/users/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Phần 2: Horses Management (Quản lý Ngựa đua)",
+			"item": [
+				{
+					"name": "2.1 Get All Horses",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/horses",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "horses"]
+						}
+					}
+				},
+				{
+					"name": "2.2 Get Horse By ID",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/horses/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "horses", "1"]
+						}
+					}
+				},
+				{
+					"name": "2.3 Create Horse",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Thunderbolt\",\n  \"age\": 4,\n  \"breed\": \"Thoroughbred\",\n  \"ownerName\": \"John Doe\",\n  \"weight\": 450.5\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/horses",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "horses"]
+						}
+					}
+				},
+				{
+					"name": "2.4 Update Horse",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Thunderbolt Champion\",\n  \"age\": 5,\n  \"breed\": \"Thoroughbred\",\n  \"ownerName\": \"John Doe\",\n  \"weight\": 460.0\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/horses/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "horses", "1"]
+						}
+					}
+				},
+				{
+					"name": "2.5 Delete Horse",
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{baseUrl}}/api/horses/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "horses", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Phần 3: Jockeys Management (Quản lý Nài ngựa)",
+			"item": [
+				{
+					"name": "3.1 Get All Jockeys",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/jockeys",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "jockeys"]
+						}
+					}
+				},
+				{
+					"name": "3.2 Get Jockey By ID",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/jockeys/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "jockeys", "1"]
+						}
+					}
+				},
+				{
+					"name": "3.3 Create Jockey",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Mike Smith\",\n  \"experienceYears\": 8,\n  \"weight\": 52.0\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/jockeys",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "jockeys"]
+						}
+					}
+				},
+				{
+					"name": "3.4 Update Jockey",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Mike Smith Sr\",\n  \"experienceYears\": 9,\n  \"weight\": 53.0\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/jockeys/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "jockeys", "1"]
+						}
+					}
+				},
+				{
+					"name": "3.5 Delete Jockey",
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{baseUrl}}/api/jockeys/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "jockeys", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Phần 4: Referees & Spectators (Trọng tài & Khán giả)",
+			"item": [
+				{
+					"name": "4.1 Get All Referees",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/referees",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "referees"]
+						}
+					}
+				},
+				{
+					"name": "4.2 Create Referee",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Ref David\",\n  \"certification\": \"National Level A\",\n  \"experienceYears\": 10\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/referees",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "referees"]
+						}
+					}
+				},
+				{
+					"name": "4.3 Get All Spectators",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/spectators",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "spectators"]
+						}
+					}
+				},
+				{
+					"name": "4.4 Create Spectator",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"Tran Van B\",\n  \"email\": \"spectator@gmail.com\",\n  \"ticketType\": \"VIP\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/spectators",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "spectators"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Phần 5: Tournaments Management (Quản lý Giải đấu)",
+			"item": [
+				{
+					"name": "5.1 Get Public Tournaments",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/tournaments",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "tournaments"]
+						}
+					}
+				},
+				{
+					"name": "5.2 Get Admin Tournaments",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/tournaments",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "tournaments"]
+						}
+					}
+				},
+				{
+					"name": "5.3 Create Tournament",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Grand National Cup 2026\",\n  \"location\": \"Saigon Racetrack\",\n  \"startDate\": \"2026-08-01\",\n  \"endDate\": \"2026-08-10\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/tournaments",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "tournaments"]
+						}
+					}
+				},
+				{
+					"name": "5.4 Update Tournament",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Grand National Championship 2026\",\n  \"location\": \"Saigon Racetrack\",\n  \"startDate\": \"2026-08-01\",\n  \"endDate\": \"2026-08-15\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/tournaments/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "tournaments", "1"]
+						}
+					}
+				},
+				{
+					"name": "5.5 Delete Tournament",
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/tournaments/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "tournaments", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Phần 6: Races Management (Quản lý Cuộc đua)",
+			"item": [
+				{
+					"name": "6.1 Get Public Races",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/races",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "races"]
+						}
+					}
+				},
+				{
+					"name": "6.2 Get Admin Races",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/races",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "races"]
+						}
+					}
+				},
+				{
+					"name": "6.3 Create Race",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"raceName\": \"Sprint Final 1000m\",\n  \"distance\": 1000,\n  \"raceTime\": \"2026-08-05T15:00:00\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/races",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "races"]
+						}
+					}
+				},
+				{
+					"name": "6.4 Update Race",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"raceName\": \"Super Sprint Final 1200m\",\n  \"distance\": 1200,\n  \"raceTime\": \"2026-08-05T16:00:00\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/races/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "races", "1"]
+						}
+					}
+				},
+				{
+					"name": "6.5 Delete Race",
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/races/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "races", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Phần 7: Registrations & Approvals (Đăng ký & Phê duyệt)",
+			"item": [
+				{
+					"name": "7.1 Get All Registrations",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/registrations",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "registrations"]
+						}
+					}
+				},
+				{
+					"name": "7.2 Register For Race",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"horseId\": 1,\n  \"jockeyId\": 1,\n  \"raceId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/registrations",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "registrations"]
+						}
+					}
+				},
+				{
+					"name": "7.3 Register For Tournament",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"tournamentId\": 1,\n  \"teamName\": \"Red Dragons\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/tournament-registrations",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "tournament-registrations"]
+						}
+					}
+				},
+				{
+					"name": "7.4 Get All Admin Approvals",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/approvals",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "approvals"]
+						}
+					}
+				},
+				{
+					"name": "7.5 Approve Registration",
+					"request": {
+						"method": "POST",
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/approvals/1/approve",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "approvals", "1", "approve"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Phần 8: Rewards, Roles & Permissions (Khen thưởng & Quyền hạn)",
+			"item": [
+				{
+					"name": "8.1 Get All Rewards",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/rewards",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "rewards"]
+						}
+					}
+				},
+				{
+					"name": "8.2 Create Reward",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"rewardName\": \"First Place Trophy\",\n  \"prizeMoney\": 10000.0,\n  \"raceId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/rewards",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "rewards"]
+						}
+					}
+				},
+				{
+					"name": "8.3 Get All Roles",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/roles",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "roles"]
+						}
+					}
+				},
+				{
+					"name": "8.4 Create Role",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"roleName\": \"REFEREE\",\n  \"description\": \"Race Judge and Referee Role\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/roles",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "roles"]
+						}
+					}
+				},
+				{
+					"name": "8.5 Get All Permissions",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/permissions",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "permissions"]
+						}
+					}
+				},
+				{
+					"name": "8.6 Create Permission",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"permissionName\": \"RACE_MANAGE\",\n  \"description\": \"Permission to create and manage races\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/permissions",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "permissions"]
+						}
+					}
+				}
+			]
+		}
+	]
+}
