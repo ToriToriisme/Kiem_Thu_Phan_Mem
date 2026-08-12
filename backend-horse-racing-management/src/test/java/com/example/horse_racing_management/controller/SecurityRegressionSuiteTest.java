@@ -17,8 +17,7 @@ import org.junit.platform.suite.api.Suite;
 public class SecurityRegressionSuiteTest {
     /**
      * Regression suite cho bảo mật backend.
-     * Mục tiêu là đảm bảo các quy tắc phân quyền và xác thực không bị phá vỡ
-     * khi có thay đổi trong code, cấu hình Spring Security hoặc controller.
+     * Mục tiêu là đảm bảo các quy tắc phân quyền
      *
      * Suite này gom các test liên quan đến:
      * - admin-only access
@@ -26,5 +25,5 @@ public class SecurityRegressionSuiteTest {
      * - auth/profile endpoints
      * - admin approval workflow
      * - user/role management permissions
-     *// Run test: ./mvnw -Dtest=SecurityRegressionSuiteTest test
+     */// Run test: ./mvnw -Dtest=SecurityRegressionSuiteTest test
 }
