@@ -576,8 +576,8 @@
                   "        pm.expect(jockey).to.have.all.keys('id', 'name', 'licenseNumber', 'experienceYears', 'rating', 'userId');",
                   "    });",
                   "});",
-                  "pm.test(\"Response time is below 3000 ms\", function () {",
-                  "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                  "pm.test(\"Response time is below 2000 ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
                   "});"
                 ],
                 "type": "text/javascript"

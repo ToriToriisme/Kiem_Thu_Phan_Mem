@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { FiEdit3, FiAlertCircle, FiCheckCircle, FiLoader } from 'react-icons/fi';
+import {
+    FiEdit3,
+    FiAlertCircle,
+    FiCheckCircle,
+    FiLoader,
+    FiActivity
+} from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import axiosClient from '../../../../services/axiosClient';
@@ -28,6 +34,10 @@ const RefereeDashboard = () => {
     const [violationsLoading, setViolationsLoading] = useState(false);
     const [raceResults, setRaceResults] = useState([]);
     const [resultsLoading, setResultsLoading] = useState(false);
+    const [healthChecks, setHealthChecks] = useState([]);
+    const [healthLoading, setHealthLoading] = useState(false);
+    const [selectedHealth, setSelectedHealth] = useState(null);
+    const [healthDetailLoading, setHealthDetailLoading] = useState(false);
     const [violationForm, setViolationForm] = useState({
         horseId: '',
         jockeyId: '',
@@ -105,6 +115,21 @@ const RefereeDashboard = () => {
             } else {
                 setRaceResults([]);
             }
+            if (type === 'health') {
+                setHealthLoading(true);
+                setSelectedHealth(null);
+
+                const healthRes = await axiosClient.get(
+                    `/referee/race/${raceId}/health-check/all`
+                );
+
+                setHealthChecks(
+                    Array.isArray(healthRes) ? healthRes : []
+                );
+            } else {
+                setHealthChecks([]);
+                setSelectedHealth(null);
+            }
         } catch (err) {
             setRaceDetails(null);
             setRaceParticipants([]);
@@ -112,10 +137,13 @@ const RefereeDashboard = () => {
             setViolationHistory([]);
             setRaceResults([]);
             setMessage('Không thể tải dữ liệu cho cuộc đua này.');
+            setHealthChecks([]);
+            setSelectedHealth(null);
         } finally {
             setReportsLoading(false);
             setViolationsLoading(false);
             setResultsLoading(false);
+            setHealthLoading(false);
         }
     };
 
@@ -127,6 +155,8 @@ const RefereeDashboard = () => {
         setReportHistory([]);
         setViolationHistory([]);
         setRaceResults([]);
+        setHealthChecks([]);
+        setSelectedHealth(null);
         setMessage('');
         setReportForm({ reportText: '' });
         setViolationForm({
@@ -204,6 +234,33 @@ const RefereeDashboard = () => {
             setMessage(err.response?.data?.error || 'Không thể lưu kết quả cuộc đua');
         } finally {
             setSubmitting(false);
+        }
+    };
+
+    const handleHealthDetail = async (horseId) => {
+        if (!selectedRace || !horseId) return;
+
+        try {
+            setHealthDetailLoading(true);
+            setError('');
+
+            const raceId =
+                selectedRace.raceId || selectedRace.id;
+
+            const data = await axiosClient.get(
+                `/referee/horse/${horseId}/health/race/${raceId}`
+            );
+
+            setSelectedHealth(data || null);
+        } catch (err) {
+            setSelectedHealth(null);
+
+            setError(
+                err.response?.data?.error ||
+                'Không thể tải chi tiết sức khỏe ngựa'
+            );
+        } finally {
+            setHealthDetailLoading(false);
         }
     };
 
@@ -306,6 +363,10 @@ const RefereeDashboard = () => {
                                                         <button className="btn-outline btn-sm" onClick={() => openModal(race, 'result')}>
                                                             Lập kết quả
                                                         </button>
+                                                        <button
+                                                            className="btn-outline btn-sm" onClick={() => openModal(race, 'health')}>
+                                                            <FiActivity /> Kiểm tra sức khỏe
+                                                        </button>
                                                         {race.status !== 'COMPLETED' && (
                                                             <button 
                                                                 className="btn-sm" 
@@ -354,7 +415,9 @@ const RefereeDashboard = () => {
                                         ? 'Lập biên bản'
                                         : activeModal === 'violation'
                                             ? 'Ghi nhận vi phạm'
-                                            : 'Lập kết quả cuộc đua'}
+                                            : activeModal === 'result'
+                                                ? 'Lập kết quả cuộc đua'
+                                                : 'Kiểm tra sức khỏe ngựa'}
                                 </h3>
                                 <p className="modal-subtitle">Cuộc đua: <strong>{selectedRace.raceName || selectedRace.name}</strong></p>
                             </div>
@@ -401,6 +464,131 @@ const RefereeDashboard = () => {
                                     )}
                                 </div>
                             </>
+                        )}
+
+                        {activeModal === 'health' && (
+                            <div className="history-section">
+                                <h4>Tình trạng sức khỏe ngựa</h4>
+
+                                {healthLoading ? (
+                                    <div className="dashboard-loading">
+                                        <FiLoader className="spinner" />
+                                        {' '}Đang tải dữ liệu sức khỏe...
+                                    </div>
+                                ) : healthChecks.length === 0 ? (
+                                    <p>
+                                        Không có dữ liệu sức khỏe cho cuộc đua này.
+                                    </p>
+                                ) : (
+                                    <div className="history-list">
+                                        {healthChecks.map((health) => (
+                                            <div
+                                                key={`${health.horseId}-${health.raceId}`}
+                                                className="history-item"
+                                            >
+                                                <div className="history-item-header">
+                                                    <strong>
+                                                        {health.horseName || health.horseId}
+                                                    </strong>
+
+                                                    <span>
+                                {health.status || 'Chưa kiểm tra'}
+                            </span>
+                                                </div>
+
+                                                <p>
+                                                    <strong>
+                                                        Được phép thi đấu:
+                                                    </strong>{' '}
+                                                    {health.approved === true
+                                                        ? 'Có'
+                                                        : health.approved === false
+                                                            ? 'Không'
+                                                            : 'Chưa xác định'}
+                                                </p>
+
+                                                <button
+                                                    type="button"
+                                                    className="btn-outline btn-sm"
+                                                    onClick={() =>
+                                                        handleHealthDetail(
+                                                            health.horseId
+                                                        )
+                                                    }
+                                                    disabled={healthDetailLoading}
+                                                >
+                                                    Xem chi tiết
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {healthDetailLoading && (
+                                    <div
+                                        className="dashboard-loading"
+                                        style={{ marginTop: '16px' }}
+                                    >
+                                        <FiLoader className="spinner" />
+                                        {' '}Đang tải chi tiết...
+                                    </div>
+                                )}
+
+                                {selectedHealth && !healthDetailLoading && (
+                                    <div
+                                        className="history-item"
+                                        style={{ marginTop: '20px' }}
+                                    >
+                                        <h4>Chi tiết sức khỏe</h4>
+
+                                        <p>
+                                            <strong>Tên ngựa:</strong>{' '}
+                                            {selectedHealth.horseName ||
+                                                selectedHealth.horseId}
+                                        </p>
+
+                                        <p>
+                                            <strong>Mã ngựa:</strong>{' '}
+                                            {selectedHealth.horseId || '---'}
+                                        </p>
+
+                                        <p>
+                                            <strong>Trạng thái:</strong>{' '}
+                                            {selectedHealth.status || 'Chưa có'}
+                                        </p>
+
+                                        <p>
+                                            <strong>
+                                                Được phép thi đấu:
+                                            </strong>{' '}
+                                            {selectedHealth.approved === true
+                                                ? 'Có'
+                                                : selectedHealth.approved === false
+                                                    ? 'Không'
+                                                    : 'Chưa xác định'}
+                                        </p>
+
+                                        <p>
+                                            <strong>Ghi chú:</strong>{' '}
+                                            {selectedHealth.notes || 'Không có'}
+                                        </p>
+
+                                        <p>
+                                            <strong>Người kiểm tra:</strong>{' '}
+                                            {selectedHealth.checkedBy || 'Chưa có'}
+                                        </p>
+
+                                        <p>
+                                            <strong>Thời gian kiểm tra:</strong>{' '}
+                                            {selectedHealth.checkedAt
+                                                ? new Date(
+                                                    selectedHealth.checkedAt
+                                                ).toLocaleString('vi-VN')
+                                                : 'Chưa có'}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
                         )}
 
                         {activeModal === 'violation' && (
