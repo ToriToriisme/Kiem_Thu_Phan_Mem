@@ -1,7 +1,7 @@
 package com.example.horse_racing_management.config;
 
-import com.example.horse_racing_management.security.JwtAuthenticationFilter;
-import lombok.RequiredArgsConstructor;
+import java.util.Arrays;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,7 +18,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
+import com.example.horse_racing_management.security.JwtAuthenticationFilter;
+
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
@@ -52,7 +54,7 @@ public class SecurityConfig {
                     .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/spectator/races").permitAll()
                     .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/horses/**").permitAll()
                     .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/horses").permitAll()
-                    .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/referee/race/**").permitAll()
+                    .requestMatchers("/api/referee/**").authenticated()
                     .anyRequest().authenticated()
             )
             .exceptionHandling(exc -> exc.authenticationEntryPoint(
