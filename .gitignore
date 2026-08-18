@@ -17,3 +17,6 @@ Thumbs.db
 
 # Env
 .env
+
+# Docs & large references
+Docs/
