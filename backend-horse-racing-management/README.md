@@ -35,6 +35,19 @@ Mỗi khi Frontend gửi một Request lên Backend, luồng dữ liệu sẽ đ
 
 ---
 
+## 🧪 Regression Test cho bảo mật
+Để chạy bộ regression test bảo mật backend, dùng lệnh sau từ thư mục backend:
+
+```bash
+./mvnw -Dtest=SecurityRegressionSuiteTest test
+```
+
+Nếu chỉ muốn chạy một file test cụ thể, thay tên class tương ứng, ví dụ:
+
+```bash
+./mvnw -Dtest=AdminSecurityRegressionTest test
+```
+
 ## 🎓 Ứng dụng Lập trình Hướng đối tượng (OOP)
 Hệ thống là một minh chứng sống động cho 4 tính chất của OOP:
 
