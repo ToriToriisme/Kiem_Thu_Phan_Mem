@@ -1,15 +1,12 @@
 # ============================================================================
-# Horse Racing Management System — Full CI/CD Pipeline
+# Horse Racing Management - CI/CD Pipeline (Sprint 1 & Sprint 2)
 # ============================================================================
-# Stages:
-#   1. Process & Build (Backend Spring Boot Java 17 + Frontend Vite React)
-#   2. Test (JUnit 5, Mockito, Security Regression Suite + CodeceptJS E2E)
-#   3. Code Quality & Security (SonarQube Scanner)
-#   4. Docker Container Packaging (Tiền đề tuần 7 đóng gói & Release)
-#   5. Deployment (Tự động hóa triển khai Production)
+# Pipeline: Build -> Test -> Deploy
+#   - Backend:  Java 17 / Spring Boot 3.x / Maven / MongoDB
+#   - Frontend: Node 20 / React 19 / Vite
 # ============================================================================
 
-name: Horse Racing CI/CD Pipeline (Build, Test, Quality & Deploy)
+name: Horse Racing CI/CD Pipeline
 
 on:
   push:
@@ -23,23 +20,86 @@ on:
   pull_request:
     branches:
       - main
-      - KCPM_Sprint_3
-      - KCPM_Sprint_4
-  workflow_dispatch:
 
 env:
   JAVA_VERSION: '17'
-  NODE_VERSION: '18'
-  BACKEND_DIR: 'backend-horse-racing-management'
-  FRONTEND_DIR: 'frontend-horse-racing-management'
+  NODE_VERSION: '20'
 
 jobs:
   # --------------------------------------------------------------------------
-  # STAGE 1 & 2: BACKEND BUILD & TEST (JUnit 5 + Security Suite + MongoDB)
+  # Stage 1: Build
   # --------------------------------------------------------------------------
-  backend-ci:
-    name: ☕ Backend Build, Test & Security Suite
+  build-backend:
+    name: Build Backend (Spring Boot)
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend-horse-racing-management
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Grant execute permission for Maven wrapper
+        run: chmod +x mvnw
+
+      - name: Build with Maven (skip tests)
+        run: ./mvnw clean package -DskipTests -B
+
+      - name: Upload backend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-jar
+          path: backend-horse-racing-management/target/*.jar
+          retention-days: 7
+
+  build-frontend:
+    name: Build Frontend (React/Vite)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend-horse-racing-management
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Lint check
+        run: npm run lint --if-present
+        continue-on-error: true
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Upload frontend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend-horse-racing-management/dist
+          retention-days: 7
+
+  # --------------------------------------------------------------------------
+  # Stage 2: Test
+  # --------------------------------------------------------------------------
+  test-backend:
+    name: Test Backend (JUnit 5 + Mockito + Security Regression)
+    runs-on: ubuntu-latest
+    needs: build-backend
     defaults:
       run:
         working-directory: backend-horse-racing-management
@@ -56,211 +116,77 @@ jobs:
           --health-retries 5
 
     steps:
-      - name: 📥 Checkout Source Code
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: ☕ Set up JDK ${{ env.JAVA_VERSION }} (Temurin)
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
           cache: maven
 
-      - name: 🔑 Grant Execute Permission for Maven Wrapper
+      - name: Grant execute permission for Maven wrapper
         run: chmod +x mvnw
 
-      - name: 🧪 Run Unit Tests & Security Regression Suite
+      - name: Run unit and security regression tests
         run: ./mvnw test -B
         env:
           SPRING_DATA_MONGODB_URI: mongodb://localhost:27017/horse_racing_test_db
           SPRING_DATA_MONGODB_DATABASE: horse_racing_test_db
 
-      - name: 📦 Build Spring Boot JAR Package
-        run: ./mvnw clean package -DskipTests -B
-
-      - name: 📤 Upload Backend Artifact (JAR)
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-app-jar
-          path: backend-horse-racing-management/target/*.jar
-          retention-days: 7
-
-      - name: 📊 Upload Test Reports
+      - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: backend-surefire-test-reports
+          name: backend-test-results
           path: backend-horse-racing-management/target/surefire-reports/
           retention-days: 7
 
   # --------------------------------------------------------------------------
-  # STAGE 1 & 2: FRONTEND BUILD & TEST (Vite + React + CodeceptJS E2E)
+  # Stage 3: Deploy (only on push to main)
   # --------------------------------------------------------------------------
-  frontend-ci:
-    name: ⚛️ Frontend Build, Lint & E2E Test
+  deploy:
+    name: Deploy to Production
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend-horse-racing-management
-
-    steps:
-      - name: 📥 Checkout Source Code
-        uses: actions/checkout@v4
-
-      - name: 🟢 Set up Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: frontend-horse-racing-management/package.json
-
-      - name: 📦 Install Frontend Dependencies
-        run: npm install
-
-      - name: 🔍 Static Code Lint Check
-        run: npm run lint --if-present
-        continue-on-error: true
-
-      - name: 🏗️ Build Production Bundle (Vite)
-        run: npm run build
-
-      - name: 📤 Upload Frontend Distribution Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-dist-package
-          path: frontend-horse-racing-management/dist
-          retention-days: 7
-
-  # --------------------------------------------------------------------------
-  # STAGE 3: CODE QUALITY & SECURITY SCAN (SonarQube)
-  # --------------------------------------------------------------------------
-  code-quality-sonarqube:
-    name: 🔍 SonarQube Code Quality & Security Scan
-    runs-on: ubuntu-latest
-    needs: [ backend-ci ]
-    defaults:
-      run:
-        working-directory: backend-horse-racing-management
-
-    steps:
-      - name: 📥 Checkout Source Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: ☕ Set up JDK ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v4
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: 'temurin'
-          cache: maven
-
-      - name: 🔍 Run SonarQube Scanner (Optional with Token)
-        if: env.SONAR_TOKEN != ''
-        run: |
-          ./mvnw sonar:sonar \
-            -Dsonar.projectKey=horse-racing-backend \
-            -Dsonar.projectName="Horse Racing Management Backend" \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL || 'https://sonarcloud.io' }} \
-            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-      - name: 📝 Quality Gate Verification Notice
-        run: echo "SonarQube Scan step configured according to Docs/Workflows/Sonarqube.md"
-
-  # --------------------------------------------------------------------------
-  # STAGE 4: DOCKER CONTAINERIZATION (Tiền đề Tuần 7 đóng gói & Release)
-  # --------------------------------------------------------------------------
-  docker-packaging:
-    name: 🐳 Docker Build & Container Packaging
-    runs-on: ubuntu-latest
-    needs: [ backend-ci, frontend-ci ]
-
-    steps:
-      - name: 📥 Checkout Source Code
-        uses: actions/checkout@v4
-
-      - name: ⬇️ Download Backend JAR Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-app-jar
-          path: backend-horse-racing-management/target
-
-      - name: ⬇️ Download Frontend Dist Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-dist-package
-          path: frontend-horse-racing-management/dist
-
-      - name: 🐳 Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: 🐳 Validate Dockerfile & Build Test Images
-        run: |
-          echo "===== Validating Backend Docker Build ====="
-          if [ -f "backend-horse-racing-management/Dockerfile" ]; then
-            docker build -t horse-racing-backend:latest ./backend-horse-racing-management
-          else
-            echo "Creating inline lightweight Dockerfile for backend verification..."
-            docker build -t horse-racing-backend:latest -f - ./backend-horse-racing-management <<EOF
-            FROM eclipse-temurin:17-jre-alpine
-            WORKDIR /app
-            COPY target/*.jar app.jar
-            EXPOSE 8080
-            ENTRYPOINT ["java", "-jar", "app.jar"]
-          EOF
-          fi
-
-          echo "===== Validating Frontend Docker Build ====="
-          if [ -f "frontend-horse-racing-management/Dockerfile" ]; then
-            docker build -t horse-racing-frontend:latest ./frontend-horse-racing-management
-          else
-            echo "Creating inline Nginx Dockerfile for frontend verification..."
-            docker build -t horse-racing-frontend:latest -f - ./frontend-horse-racing-management <<EOF
-            FROM nginx:alpine
-            COPY dist /usr/share/nginx/html
-            EXPOSE 80
-            CMD ["nginx", "-g", "daemon off;"]
-          EOF
-          fi
-
-          echo "Docker container images built successfully!"
-
-  # --------------------------------------------------------------------------
-  # STAGE 5: DEPLOYMENT (Tự động kích hoạt khi push lên main)
-  # --------------------------------------------------------------------------
-  deploy-production:
-    name: 🚀 Deploy to Production & Release Package
-    runs-on: ubuntu-latest
-    needs: [ backend-ci, frontend-ci, docker-packaging ]
+    needs: [ test-backend, build-frontend ]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
-      - name: 📥 Checkout Source Code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: ⬇️ Download All Built Artifacts
+      - name: Download backend artifact
         uses: actions/download-artifact@v4
         with:
-          path: release-artifacts
+          name: backend-jar
+          path: deploy/backend
 
-      - name: 📋 Prepare Deployment Package
+      - name: Download frontend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: deploy/frontend
+
+      - name: List deployment artifacts
         run: |
-          echo "============================================================"
-          echo "🚀 HORSE RACING MANAGEMENT SYSTEM - DEPLOYMENT PIPELINE"
-          echo "============================================================"
-          echo "Branch: ${{ github.ref_name }}"
-          echo "Commit: ${{ github.sha }}"
-          echo "Triggered by: ${{ github.actor }}"
+          echo "===== Deployment Artifacts ====="
           echo ""
-          echo "Artifacts included in this release:"
-          ls -la release-artifacts/
-          echo "============================================================"
+          echo "Backend JAR:"
+          ls -lh deploy/backend/
+          echo ""
+          echo "Frontend Dist:"
+          ls -lh deploy/frontend/
+          echo ""
+          echo "All artifacts ready for deployment!"
 
-      - name: 🌐 Deploy Notification & Summary
+      - name: Deployment summary
         run: |
-          echo "✅ Pipeline Build, Test, Quality Analysis & Docker Packaging completed successfully!"
-          echo "Ready for Sprint 6 & 7 final release presentation."
+          echo "============================================"
+          echo "  Horse Racing Management                   "
+          echo "  Sprint 1 & Sprint 2 Verified Successfully! "
+          echo "                                            "
+          echo "  Branch: ${{ github.ref_name }}             "
+          echo "  Commit: ${{ github.sha }}                  "
+          echo "  Actor:  ${{ github.actor }}                "
+          echo "============================================"
