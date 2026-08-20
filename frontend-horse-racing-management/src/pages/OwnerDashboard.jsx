@@ -17,6 +17,13 @@ const OwnerDashboard = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // State cho Modal Sửa Ngựa
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingHorse, setEditingHorse] = useState(null);
+  const [isEditSubmitting, setIsEditSubmitting] = useState(false);
+
+  const MAX_HORSE_AGE = 30;
+
   // Hàm dịch trạng thái (Switch case)
   const translateStatus = (status) => {
     switch (status?.toUpperCase()) {
@@ -84,6 +91,41 @@ const OwnerDashboard = () => {
       alert("Có lỗi xảy ra khi thêm ngựa mới. Vui lòng kiểm tra console.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // 3. Hàm mở Modal Sửa với dữ liệu ngựa đã chọn
+  const openEditModal = (horse) => {
+    setEditingHorse({
+      id: horse.id,
+      name: horse.name || '',
+      age: horse.age ?? '',
+      breed: horse.breed || ''
+    });
+    setIsEditModalOpen(true);
+  };
+
+  // 4. Hàm xử lý Sửa thông tin ngựa
+  const handleEditHorseSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setIsEditSubmitting(true);
+
+      await apiClient.put(`/horses/${editingHorse.id}`, {
+        name: editingHorse.name,
+        age: parseInt(editingHorse.age),
+        breed: editingHorse.breed
+      });
+
+      setIsEditModalOpen(false);
+      setEditingHorse(null);
+      await fetchDashboardData();
+
+    } catch (err) {
+      console.error("Lỗi khi sửa ngựa:", err);
+      alert("Có lỗi xảy ra khi lưu thông tin ngựa. Vui lòng kiểm tra console.");
+    } finally {
+      setIsEditSubmitting(false);
     }
   };
 
@@ -155,8 +197,11 @@ const OwnerDashboard = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-center">
-                          <button className="bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-semibold py-1.5 px-4 rounded-[4px] border border-gray-200">
-                            Chi tiết
+                          <button
+                            onClick={() => openEditModal(horse)}
+                            className="bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-semibold py-1.5 px-4 rounded-[4px] border border-gray-200"
+                          >
+                            Sửa
                           </button>
                         </td>
                       </tr>
@@ -225,6 +270,7 @@ const OwnerDashboard = () => {
                   onChange={(e) => setNewHorse({...newHorse, name: e.target.value})}
                   placeholder="Ví dụ: Tía Chớp"
                 />
+                <p className="text-xs text-gray-400 mt-1">Đặt tên riêng để dễ nhận diện ngựa trong danh sách và bảng đua.</p>
               </div>
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Tuổi</label>
@@ -232,11 +278,13 @@ const OwnerDashboard = () => {
                   type="number" 
                   required
                   min="1"
+                  max={MAX_HORSE_AGE}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={newHorse.age}
                   onChange={(e) => setNewHorse({...newHorse, age: e.target.value})}
                   placeholder="Ví dụ: 3"
                 />
+                <p className="text-xs text-gray-400 mt-1">Nhập tuổi hợp lý từ 1 đến {MAX_HORSE_AGE} (tuổi thọ trung bình của ngựa đua).</p>
               </div>
               <div className="flex justify-end gap-3">
                 <button 
@@ -252,6 +300,69 @@ const OwnerDashboard = () => {
                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300"
                 >
                   {isSubmitting ? 'Đang lưu...' : 'Lưu thông tin'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL SỬA NGỰA */}
+      {isEditModalOpen && editingHorse && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Sửa thông tin ngựa</h3>
+            <form onSubmit={handleEditHorseSubmit}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tên ngựa</label>
+                <input
+                  type="text"
+                  required
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={editingHorse.name}
+                  onChange={(e) => setEditingHorse({ ...editingHorse, name: e.target.value })}
+                  placeholder="Ví dụ: Tía Chớp"
+                />
+                <p className="text-xs text-gray-400 mt-1">Đặt tên riêng để dễ nhận diện ngựa trong danh sách và bảng đua.</p>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tuổi</label>
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  max={MAX_HORSE_AGE}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={editingHorse.age}
+                  onChange={(e) => setEditingHorse({ ...editingHorse, age: e.target.value })}
+                  placeholder="Ví dụ: 3"
+                />
+                <p className="text-xs text-gray-400 mt-1">Nhập tuổi hợp lý từ 1 đến {MAX_HORSE_AGE} (tuổi thọ trung bình của ngựa đua).</p>
+              </div>
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Giống ngựa (không bắt buộc)</label>
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={editingHorse.breed}
+                  onChange={(e) => setEditingHorse({ ...editingHorse, breed: e.target.value })}
+                  placeholder="Ví dụ: Thoroughbred"
+                />
+              </div>
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => { setIsEditModalOpen(false); setEditingHorse(null); }}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={isEditSubmitting}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300"
+                >
+                  {isEditSubmitting ? 'Đang lưu...' : 'Lưu thay đổi'}
                 </button>
               </div>
             </form>

@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import axiosClient from '../../../services/axiosClient';
 import { showToast } from '../../../utils/alertUtils';
+import { formatDateTime } from '../../../utils/dateUtils';
 import { FaCalendarAlt, FaRoute, FaCoins, FaHorse } from 'react-icons/fa';
 import { FiX } from 'react-icons/fi';
 import './LiveBetting.css';
 import { useSelector } from 'react-redux';
+
+const MIN_BET = 10000;
+const BET_STEP = 10000;
 
 const LiveBetting = () => {
     const { user } = useSelector((state) => state.auth || {});
@@ -79,12 +83,24 @@ const LiveBetting = () => {
             return;
         }
 
-        if (betForm.amount <= 0) {
-            showToast('Số tiền cược phải lớn hơn 0!', 'warning');
+        const amount = Number(betForm.amount);
+
+        if (betForm.amount === '' || isNaN(amount) || amount <= 0) {
+            showToast('Vui lòng nhập số tiền cược hợp lệ!', 'warning');
             return;
         }
-        
-        if (balance < betForm.amount) {
+
+        if (amount < MIN_BET) {
+            showToast(`Số tiền cược tối thiểu là ${MIN_BET.toLocaleString('vi-VN')} VNĐ!`, 'warning');
+            return;
+        }
+
+        if (amount % BET_STEP !== 0) {
+            showToast(`Số tiền cược phải là bội số của ${BET_STEP.toLocaleString('vi-VN')} VNĐ!`, 'warning');
+            return;
+        }
+
+        if (balance < amount) {
             showToast('Số dư không đủ! Vui lòng nạp thêm tiền.', 'error');
             return;
         }
@@ -94,11 +110,11 @@ const LiveBetting = () => {
                 spectatorId: user?.id || 'spectator-1', 
                 raceId: selectedRace.id,
                 horseId: betForm.horseId,
-                amount: betForm.amount,
+                amount: amount,
                 predictedPosition: betForm.predictedPosition
             });
             showToast('Đặt cược thành công!', 'success');
-            setBalance(prev => prev - betForm.amount);
+            setBalance(prev => prev - amount);
             setIsBetModalOpen(false);
         } catch (error) {
             console.error(error);
@@ -130,7 +146,7 @@ const LiveBetting = () => {
                                 </span>
                             </div>
                             <div className="race-info">
-                                <p><FaCalendarAlt /> Bắt đầu: {new Date(race.startTime).toLocaleString('vi-VN')}</p>
+                                <p><FaCalendarAlt /> Bắt đầu: {formatDateTime(race.startTime)}</p>
                                 <p><FaRoute /> Cự ly: {race.distance} mét</p>
                             </div>
                             <button 
@@ -189,12 +205,19 @@ const LiveBetting = () => {
                                 <label>Số tiền cược (VNĐ)</label>
                                 <input 
                                     type="number" 
-                                    min="10000" 
-                                    step="10000"
+                                    min={MIN_BET}
+                                    max={balance > 0 ? balance : undefined}
+                                    step={BET_STEP}
                                     value={betForm.amount}
-                                    onChange={(e) => setBetForm({...betForm, amount: parseInt(e.target.value)})}
+                                    onChange={(e) => {
+                                        const raw = e.target.value;
+                                        setBetForm({...betForm, amount: raw === '' ? '' : Number(raw)});
+                                    }}
                                     required
                                 />
+                                <small style={{ color: '#64748b', display: 'block', marginTop: '4px' }}>
+                                    Tối thiểu {MIN_BET.toLocaleString('vi-VN')} VNĐ, theo bội số {BET_STEP.toLocaleString('vi-VN')} VNĐ. Số dư khả dụng: {balance.toLocaleString('vi-VN')} VNĐ.
+                                </small>
                             </div>
                             <button type="submit" className="submit-btn">Xác nhận cược</button>
                         </form>

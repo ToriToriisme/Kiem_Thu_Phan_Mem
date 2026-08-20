@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiCheck, FiX } from 'react-icons/fi';
 import axiosClient from '../../../../services/axiosClient';
+import { formatDate, formatDateTime } from '../../../../utils/dateUtils';
 
 const JockeyDashboard = () => {
     const [userInfo, setUserInfo] = useState(null);
@@ -122,7 +123,7 @@ const JockeyDashboard = () => {
                             <div className="inv-info">
                                 <h4>{inv.tournamentName}</h4>
                                 <p><strong>Ngựa:</strong> {inv.horseName}</p>
-                                <p><strong>Ngày đua:</strong> {new Date(inv.startDate).toLocaleDateString('vi-VN')}</p>
+                                <p><strong>Ngày đua:</strong> {formatDate(inv.startDate)}</p>
                             </div>
                             <div className="inv-actions">
                                 <button 
@@ -166,7 +167,7 @@ const JockeyDashboard = () => {
                         <tbody>
                             {schedules.length > 0 ? schedules.map(sch => (
                                 <tr key={sch.registrationId}>
-                                    <td><strong>{new Date(sch.startDate).toLocaleString('vi-VN')}</strong></td>
+                                    <td><strong>{formatDateTime(sch.startDate)}</strong></td>
                                     <td>{sch.tournamentName}</td>
                                     <td>{sch.horseName}</td>
                                     <td>

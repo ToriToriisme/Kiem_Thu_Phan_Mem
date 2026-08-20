@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosClient from '../../../services/axiosClient';
 import { FiCalendar, FiClock, FiActivity } from 'react-icons/fi';
+import { formatDate } from '../../../utils/dateUtils';
 import './Tournaments.css';
 
 const Tournaments = () => {
@@ -25,12 +26,6 @@ const Tournaments = () => {
         } finally {
             setLoading(false);
         }
-    };
-
-    const formatDate = (dateString) => {
-        if (!dateString) return 'Chưa xác định';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
     };
 
     const getStatusText = (status) => {

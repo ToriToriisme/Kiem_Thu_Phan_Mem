@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import axiosClient from '../services/axiosClient';
+import { formatDate } from '../utils/dateUtils';
 
 const JockeyDashboard = () => {
     const user = useSelector(state => state.auth.user);
@@ -87,8 +88,8 @@ const JockeyDashboard = () => {
                     {schedules.map(item => (
                         <tr key={item.registrationId}>
                             <td>{item.tournamentName}</td>
-                            <td>{new Date(item.startDate).toLocaleDateString('vi-VN')}</td>
-                            <td>{new Date(item.endDate).toLocaleDateString('vi-VN')}</td>
+                            <td>{formatDate(item.startDate)}</td>
+                            <td>{formatDate(item.endDate)}</td>
                             <td>{item.horseName}</td>
                             <td>
                                 <span style={{
