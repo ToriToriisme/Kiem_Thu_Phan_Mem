@@ -3,9 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import axiosClient from '../../../services/axiosClient';
 import { showToast } from '../../../utils/alertUtils';
+import { formatDateTime } from '../../../utils/dateUtils';
 import { FaCalendarAlt, FaRoute, FaCoins, FaPlayCircle, FaTrophy } from 'react-icons/fa';
 import { FiX } from 'react-icons/fi';
 import './RaceCenter.css';
+
+const MIN_BET = 10000;
+const BET_STEP = 10000;
 
 const RaceCenter = () => {
     const { user, isAuthenticated } = useSelector((state) => state.auth || {});
@@ -96,12 +100,24 @@ const RaceCenter = () => {
             return;
         }
 
-        if (betForm.amount <= 0) {
-            showToast('Số tiền cược phải lớn hơn 0!', 'warning');
+        const amount = Number(betForm.amount);
+
+        if (betForm.amount === '' || isNaN(amount) || amount <= 0) {
+            showToast('Vui lòng nhập số tiền cược hợp lệ!', 'warning');
             return;
         }
-        
-        if (balance < betForm.amount) {
+
+        if (amount < MIN_BET) {
+            showToast(`Số tiền cược tối thiểu là ${MIN_BET.toLocaleString('vi-VN')} VNĐ!`, 'warning');
+            return;
+        }
+
+        if (amount % BET_STEP !== 0) {
+            showToast(`Số tiền cược phải là bội số của ${BET_STEP.toLocaleString('vi-VN')} VNĐ!`, 'warning');
+            return;
+        }
+
+        if (balance < amount) {
             showToast('Số dư không đủ! Vui lòng nạp thêm tiền.', 'error');
             return;
         }
@@ -111,11 +127,11 @@ const RaceCenter = () => {
                 spectatorId: user?.id, 
                 raceId: selectedRace.id,
                 horseId: betForm.horseId,
-                amount: betForm.amount,
+                amount: amount,
                 predictedPosition: betForm.predictedPosition
             });
             showToast('Đặt cược thành công!', 'success');
-            setBalance(prev => prev - betForm.amount);
+            setBalance(prev => prev - amount);
             setIsBetModalOpen(false);
         } catch (error) {
             console.error(error);
@@ -168,7 +184,7 @@ const RaceCenter = () => {
                                 </span>
                             </div>
                             <div className="rc-race-info">
-                                <p><FaCalendarAlt color="#38bdf8" /> Bắt đầu: {new Date(race.startTime).toLocaleString('vi-VN')}</p>
+                                <p><FaCalendarAlt color="#38bdf8" /> Bắt đầu: {formatDateTime(race.startTime)}</p>
                                 <p><FaRoute color="#10b981" /> Cự ly: {race.distance} mét</p>
                             </div>
                             
@@ -246,12 +262,19 @@ const RaceCenter = () => {
                                 <label>Số tiền cược (VNĐ)</label>
                                 <input 
                                     type="number" 
-                                    min="10000" 
-                                    step="10000"
+                                    min={MIN_BET}
+                                    max={balance > 0 ? balance : undefined}
+                                    step={BET_STEP}
                                     value={betForm.amount}
-                                    onChange={(e) => setBetForm({...betForm, amount: parseInt(e.target.value)})}
+                                    onChange={(e) => {
+                                        const raw = e.target.value;
+                                        setBetForm({...betForm, amount: raw === '' ? '' : Number(raw)});
+                                    }}
                                     required
                                 />
+                                <small style={{ color: '#94a3b8', display: 'block', marginTop: '4px' }}>
+                                    Tối thiểu {MIN_BET.toLocaleString('vi-VN')} VNĐ, theo bội số {BET_STEP.toLocaleString('vi-VN')} VNĐ. Số dư khả dụng: {balance.toLocaleString('vi-VN')} VNĐ.
+                                </small>
                             </div>
                             <button type="submit" className="rc-submit-btn">Chốt Kèo!</button>
                         </form>
