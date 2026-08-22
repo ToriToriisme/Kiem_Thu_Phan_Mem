@@ -2,6 +2,8 @@ package com.example.horse_racing_management.dto;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,6 +24,7 @@ public class ViolationDTO {
     private String severity; // LOW, MEDIUM, HIGH, CRITICAL
     private String refereeId;
     private String refereeName;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime recordedAt;
     private Long version;
 }

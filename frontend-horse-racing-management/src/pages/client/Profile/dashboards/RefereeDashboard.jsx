@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { FiEdit3, FiAlertCircle, FiCheckCircle, FiLoader } from 'react-icons/fi';
+import {
+    FiEdit3,
+    FiAlertCircle,
+    FiCheckCircle,
+    FiLoader,
+    FiActivity
+} from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import axiosClient from '../../../../services/axiosClient';
@@ -28,6 +34,10 @@ const RefereeDashboard = () => {
     const [violationsLoading, setViolationsLoading] = useState(false);
     const [raceResults, setRaceResults] = useState([]);
     const [resultsLoading, setResultsLoading] = useState(false);
+    const [healthChecks, setHealthChecks] = useState([]);
+    const [healthLoading, setHealthLoading] = useState(false);
+    const [selectedHealth, setSelectedHealth] = useState(null);
+    const [healthDetailLoading, setHealthDetailLoading] = useState(false);
     const [violationForm, setViolationForm] = useState({
         horseId: '',
         jockeyId: '',
@@ -105,6 +115,21 @@ const RefereeDashboard = () => {
             } else {
                 setRaceResults([]);
             }
+            if (type === 'health') {
+                setHealthLoading(true);
+                setSelectedHealth(null);
+
+                const healthRes = await axiosClient.get(
+                    `/referee/race/${raceId}/health-check/all`
+                );
+
+                setHealthChecks(
+                    Array.isArray(healthRes) ? healthRes : []
+                );
+            } else {
+                setHealthChecks([]);
+                setSelectedHealth(null);
+            }
         } catch (err) {
             setRaceDetails(null);
             setRaceParticipants([]);
@@ -112,10 +137,13 @@ const RefereeDashboard = () => {
             setViolationHistory([]);
             setRaceResults([]);
             setMessage('Không thể tải dữ liệu cho cuộc đua này.');
+            setHealthChecks([]);
+            setSelectedHealth(null);
         } finally {
             setReportsLoading(false);
             setViolationsLoading(false);
             setResultsLoading(false);
+            setHealthLoading(false);
         }
     };
 
@@ -127,6 +155,8 @@ const RefereeDashboard = () => {
         setReportHistory([]);
         setViolationHistory([]);
         setRaceResults([]);
+        setHealthChecks([]);
+        setSelectedHealth(null);
         setMessage('');
         setReportForm({ reportText: '' });
         setViolationForm({
@@ -207,6 +237,33 @@ const RefereeDashboard = () => {
         }
     };
 
+    const handleHealthDetail = async (horseId) => {
+        if (!selectedRace || !horseId) return;
+
+        try {
+            setHealthDetailLoading(true);
+            setError('');
+
+            const raceId =
+                selectedRace.raceId || selectedRace.id;
+
+            const data = await axiosClient.get(
+                `/referee/horse/${horseId}/health/race/${raceId}`
+            );
+
+            setSelectedHealth(data || null);
+        } catch (err) {
+            setSelectedHealth(null);
+
+            setError(
+                err.response?.data?.error ||
+                'Không thể tải chi tiết sức khỏe ngựa'
+            );
+        } finally {
+            setHealthDetailLoading(false);
+        }
+    };
+
     const handleHorseSelect = (value, formType) => {
         const selectedParticipant = raceParticipants.find((item) => item.horseId === value);
         if (formType === 'violation') {
@@ -273,71 +330,75 @@ const RefereeDashboard = () => {
                     ) : (
                         <table className="tm-table referee-table">
                             <thead>
-                                <tr>
-                                    <th>Mã cuộc đua</th>
-                                    <th>Tên cuộc đua</th>
-                                    <th>Trạng thái</th>
-                                    <th>Nhiệm vụ</th>
-                                </tr>
+                            <tr>
+                                <th>Mã cuộc đua</th>
+                                <th>Tên cuộc đua</th>
+                                <th>Trạng thái</th>
+                                <th>Nhiệm vụ</th>
+                            </tr>
                             </thead>
                             <tbody>
-                                {assignedRaces.length === 0 ? (
-                                    <tr>
-                                        <td colSpan="4" className="empty-row">Không có cuộc đua nào được phân công.</td>
-                                    </tr>
-                                ) : (
-                                    assignedRaces.map((race) => {
-                                        const status = getStatusBadge(race.status || race.raceStatus || raceDetails?.status);
-                                        return (
-                                            <tr key={race.raceId || race.id}>
-                                                <td><strong>{race.raceId || race.id}</strong></td>
-                                                <td>{race.raceName || race.name || '---'}</td>
-                                                <td>
-                                                    <span className={`status-pill ${status.type}`}>{status.label}</span>
-                                                </td>
-                                                <td>
-                                                    <div className="table-actions">
-                                                        <button className="btn-primary btn-sm" onClick={() => openModal(race, 'report')}>
-                                                            <FiEdit3 /> Lập biên bản
-                                                        </button>
-                                                        <button className="btn-secondary btn-sm" onClick={() => openModal(race, 'violation')}>
-                                                            <FiAlertCircle /> Ghi nhận vi phạm
-                                                        </button>
-                                                        <button className="btn-outline btn-sm" onClick={() => openModal(race, 'result')}>
-                                                            Lập kết quả
-                                                        </button>
-                                                        {race.status !== 'COMPLETED' && (
-                                                            <button 
-                                                                className="btn-sm" 
-                                                                style={{background: '#10b981', color: 'white', border: 'none', marginLeft: '5px', cursor: 'pointer'}}
-                                                                onClick={async () => {
-                                                                    if (!window.confirm(`XÁC NHẬN CHỐT: Bạn đã xử lý xong mọi vi phạm và chắc chắn muốn CHỐT KẾT QUẢ để chia thưởng cho cuộc đua này? Hành động này không thể hoàn tác!`)) return;
+                            {assignedRaces.length === 0 ? (
+                                <tr>
+                                    <td colSpan="4" className="empty-row">Không có cuộc đua nào được phân công.</td>
+                                </tr>
+                            ) : (
+                                assignedRaces.map((race) => {
+                                    const status = getStatusBadge(race.status || race.raceStatus || raceDetails?.status);
+                                    return (
+                                        <tr key={race.raceId || race.id}>
+                                            <td><strong>{race.raceId || race.id}</strong></td>
+                                            <td>{race.raceName || race.name || '---'}</td>
+                                            <td>
+                                                <span className={`status-pill ${status.type}`}>{status.label}</span>
+                                            </td>
+                                            <td>
+                                                <div className="table-actions">
+                                                    <button className="btn-primary btn-sm" onClick={() => openModal(race, 'report')}>
+                                                        <FiEdit3 /> Lập biên bản
+                                                    </button>
+                                                    <button className="btn-secondary btn-sm" onClick={() => openModal(race, 'violation')}>
+                                                        <FiAlertCircle /> Ghi nhận vi phạm
+                                                    </button>
+                                                    <button className="btn-outline btn-sm" onClick={() => openModal(race, 'result')}>
+                                                        Lập kết quả
+                                                    </button>
+                                                    <button
+                                                        className="btn-outline btn-sm" onClick={() => openModal(race, 'health')}>
+                                                        <FiActivity /> Kiểm tra sức khỏe
+                                                    </button>
+                                                    {race.status !== 'COMPLETED' && (
+                                                        <button
+                                                            className="btn-sm"
+                                                            style={{background: '#10b981', color: 'white', border: 'none', marginLeft: '5px', cursor: 'pointer'}}
+                                                            onClick={async () => {
+                                                                if (!window.confirm(`XÁC NHẬN CHỐT: Bạn đã xử lý xong mọi vi phạm và chắc chắn muốn CHỐT KẾT QUẢ để chia thưởng cho cuộc đua này? Hành động này không thể hoàn tác!`)) return;
+                                                                try {
+                                                                    setLoading(true);
+                                                                    const raceId = race.raceId || race.id;
+                                                                    await axiosClient.post(`/v1/rewards/calculate/${raceId}`);
                                                                     try {
-                                                                        setLoading(true);
-                                                                        const raceId = race.raceId || race.id;
-                                                                        await axiosClient.post(`/v1/rewards/calculate/${raceId}`);
-                                                                        try {
-                                                                            await axiosClient.post(`/v1/tournaments/advance/${raceId}`);
-                                                                        } catch (e) {
-                                                                            // Ignore advance error if tournament ends or something
-                                                                        }
-                                                                        setMessage('Đã chốt kết quả, cộng tiền thưởng thành công và đóng cuộc đua!');
-                                                                        fetchAssignedRaces();
-                                                                    } catch (err) {
-                                                                        setError('Lỗi khi chia thưởng: ' + (err.response?.data?.error || err.message));
-                                                                        setLoading(false);
+                                                                        await axiosClient.post(`/v1/tournaments/advance/${raceId}`);
+                                                                    } catch (e) {
+                                                                        // Ignore advance error if tournament ends or something
                                                                     }
-                                                                }}
-                                                            >
-                                                                <FiCheckCircle style={{marginRight: '5px'}}/> Chốt & Chia Thưởng
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
-                                )}
+                                                                    setMessage('Đã chốt kết quả, cộng tiền thưởng thành công và đóng cuộc đua!');
+                                                                    fetchAssignedRaces();
+                                                                } catch (err) {
+                                                                    setError('Lỗi khi chia thưởng: ' + (err.response?.data?.error || err.message));
+                                                                    setLoading(false);
+                                                                }
+                                                            }}
+                                                        >
+                                                            <FiCheckCircle style={{marginRight: '5px'}}/> Chốt & Chia Thưởng
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
                             </tbody>
                         </table>
                     )}
@@ -354,7 +415,9 @@ const RefereeDashboard = () => {
                                         ? 'Lập biên bản'
                                         : activeModal === 'violation'
                                             ? 'Ghi nhận vi phạm'
-                                            : 'Lập kết quả cuộc đua'}
+                                            : activeModal === 'result'
+                                                ? 'Lập kết quả cuộc đua'
+                                                : 'Kiểm tra sức khỏe ngựa'}
                                 </h3>
                                 <p className="modal-subtitle">Cuộc đua: <strong>{selectedRace.raceName || selectedRace.name}</strong></p>
                             </div>
@@ -401,6 +464,131 @@ const RefereeDashboard = () => {
                                     )}
                                 </div>
                             </>
+                        )}
+
+                        {activeModal === 'health' && (
+                            <div className="history-section">
+                                <h4>Tình trạng sức khỏe ngựa</h4>
+
+                                {healthLoading ? (
+                                    <div className="dashboard-loading">
+                                        <FiLoader className="spinner" />
+                                        {' '}Đang tải dữ liệu sức khỏe...
+                                    </div>
+                                ) : healthChecks.length === 0 ? (
+                                    <p>
+                                        Không có dữ liệu sức khỏe cho cuộc đua này.
+                                    </p>
+                                ) : (
+                                    <div className="history-list">
+                                        {healthChecks.map((health) => (
+                                            <div
+                                                key={`${health.horseId}-${health.raceId}`}
+                                                className="history-item"
+                                            >
+                                                <div className="history-item-header">
+                                                    <strong>
+                                                        {health.horseName || health.horseId}
+                                                    </strong>
+
+                                                    <span>
+                                {health.status || 'Chưa kiểm tra'}
+                            </span>
+                                                </div>
+
+                                                <p>
+                                                    <strong>
+                                                        Được phép thi đấu:
+                                                    </strong>{' '}
+                                                    {health.approved === true
+                                                        ? 'Có'
+                                                        : health.approved === false
+                                                            ? 'Không'
+                                                            : 'Chưa xác định'}
+                                                </p>
+
+                                                <button
+                                                    type="button"
+                                                    className="btn-outline btn-sm"
+                                                    onClick={() =>
+                                                        handleHealthDetail(
+                                                            health.horseId
+                                                        )
+                                                    }
+                                                    disabled={healthDetailLoading}
+                                                >
+                                                    Xem chi tiết
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {healthDetailLoading && (
+                                    <div
+                                        className="dashboard-loading"
+                                        style={{ marginTop: '16px' }}
+                                    >
+                                        <FiLoader className="spinner" />
+                                        {' '}Đang tải chi tiết...
+                                    </div>
+                                )}
+
+                                {selectedHealth && !healthDetailLoading && (
+                                    <div
+                                        className="history-item"
+                                        style={{ marginTop: '20px' }}
+                                    >
+                                        <h4>Chi tiết sức khỏe</h4>
+
+                                        <p>
+                                            <strong>Tên ngựa:</strong>{' '}
+                                            {selectedHealth.horseName ||
+                                                selectedHealth.horseId}
+                                        </p>
+
+                                        <p>
+                                            <strong>Mã ngựa:</strong>{' '}
+                                            {selectedHealth.horseId || '---'}
+                                        </p>
+
+                                        <p>
+                                            <strong>Trạng thái:</strong>{' '}
+                                            {selectedHealth.status || 'Chưa có'}
+                                        </p>
+
+                                        <p>
+                                            <strong>
+                                                Được phép thi đấu:
+                                            </strong>{' '}
+                                            {selectedHealth.approved === true
+                                                ? 'Có'
+                                                : selectedHealth.approved === false
+                                                    ? 'Không'
+                                                    : 'Chưa xác định'}
+                                        </p>
+
+                                        <p>
+                                            <strong>Ghi chú:</strong>{' '}
+                                            {selectedHealth.notes || 'Không có'}
+                                        </p>
+
+                                        <p>
+                                            <strong>Người kiểm tra:</strong>{' '}
+                                            {selectedHealth.checkedBy || 'Chưa có'}
+                                        </p>
+
+                                        <p>
+                                            <strong>Thời gian kiểm tra:</strong>{' '}
+                                            {selectedHealth.checkedAt
+                                                ? new Date(
+                                                    selectedHealth.checkedAt
+                                                ).toLocaleString('vi-VN')
+                                                : 'Chưa có'}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
                         )}
 
                         {activeModal === 'violation' && (
@@ -575,16 +763,16 @@ const RefereeDashboard = () => {
                                                             <strong>{result.horseName || result.horseId}</strong>
                                                             <span>{result.jockeyName || result.jockeyId}</span>
                                                         </div>
-                                                        <p><strong>Vị trí:</strong> {result.position} 
-                                                           {result.position === 99 && <span style={{color: 'red', marginLeft: '10px'}}>(Bị Loại / Xử Thua)</span>}
+                                                        <p><strong>Vị trí:</strong> {result.position}
+                                                            {result.position === 99 && <span style={{color: 'red', marginLeft: '10px'}}>(Bị Loại / Xử Thua)</span>}
                                                         </p>
                                                         <p><strong>Thời gian:</strong> {result.finishTime}s</p>
                                                         {result.prizeMoney != null && <p><strong>Thưởng:</strong> {result.prizeMoney.toLocaleString()}</p>}
                                                     </div>
                                                     {result.position !== 99 && (
-                                                        <button 
+                                                        <button
                                                             type="button"
-                                                            className="btn-outline btn-sm" 
+                                                            className="btn-outline btn-sm"
                                                             style={{color: '#ef4444', borderColor: '#ef4444', padding: '4px 8px', fontSize: '0.8rem'}}
                                                             onClick={async () => {
                                                                 if (!window.confirm(`Bạn có chắc chắn muốn XỬ THUA chiến mã ${result.horseName}? Kết quả sẽ bị đẩy xuống hạng chót.`)) return;
@@ -616,7 +804,7 @@ const RefereeDashboard = () => {
                         )}
                     </div>
                 </div>
-            , document.body)}
+                , document.body)}
         </div>
     );
 };

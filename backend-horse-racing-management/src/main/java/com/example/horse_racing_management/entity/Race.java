@@ -1,6 +1,7 @@
 package com.example.horse_racing_management.entity;
 
 import com.example.horse_racing_management.entity.enums.RaceStatus;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -25,6 +26,7 @@ public class Race {
     private String name;
 
     @Field("start_time")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime startTime;
 
     private Double distance;
@@ -33,7 +35,7 @@ public class Race {
 
     @Field("referee_id")
     private String refereeId;
-    
+
     @Field("advancing_count")
     private Integer advancingCount; // Number of horses advancing to next round (e.g., 5). If 3, it means Final Round.
 }

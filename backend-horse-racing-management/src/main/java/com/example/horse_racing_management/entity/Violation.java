@@ -2,6 +2,7 @@ package com.example.horse_racing_management.entity;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -42,6 +43,7 @@ public class Violation {
     private String refereeId;
 
     @Field("recorded_at")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime recordedAt = LocalDateTime.now();
 
     @Version
