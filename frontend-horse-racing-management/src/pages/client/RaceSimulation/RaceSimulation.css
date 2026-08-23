@@ -13,7 +13,7 @@
 }
 
 .rs-header h2 {
-  font-size: 2.5rem;
+  font-size: clamp(1.6rem, 6vw, 2.5rem);
   font-weight: 800;
   color: #111827;
   margin-bottom: 12px;
@@ -32,7 +32,7 @@
 }
 
 .rs-countdown-display {
-  font-size: 4.5rem;
+  font-size: clamp(2.5rem, 12vw, 4.5rem);
   font-weight: 800;
   color: #ef4444;
   margin: 20px 0;
@@ -247,4 +247,28 @@
   align-items: center;
   gap: 12px;
   box-shadow: 0 2px 4px rgba(239, 68, 68, 0.05);
+}
+
+@media (max-width: 768px) {
+  .rs-container {
+    padding: 20px 16px;
+  }
+
+  .rs-leaderboard {
+    padding: 18px;
+  }
+
+  .rs-horse-avatar {
+    width: 42px;
+    height: 42px;
+    font-size: 1.4rem;
+  }
+
+  .rs-horse-lane {
+    height: 52px;
+  }
+
+  .rs-finish-line {
+    right: 20px;
+  }
 }

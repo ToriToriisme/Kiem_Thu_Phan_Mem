@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
-import { FiSearch, FiBell, FiUser, FiLogOut, FiSettings } from 'react-icons/fi';
+import { FiSearch, FiBell, FiUser, FiLogOut, FiSettings, FiMenu, FiX } from 'react-icons/fi';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../redux/slices/authSlice';
 import './ClientNavbar.css';
@@ -11,6 +11,7 @@ const ClientNavbar = () => {
   const navigate = useNavigate();
   
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const dropdownRef = useRef(null);
 
   // Close dropdown when clicking outside
@@ -29,6 +30,7 @@ const ClientNavbar = () => {
   const handleLogout = () => {
     dispatch(logout());
     setShowDropdown(false);
+    setShowMobileMenu(false);
     navigate('/login');
   };
 
@@ -39,18 +41,18 @@ const ClientNavbar = () => {
           EQUINEELITE
         </Link>
         
-        <ul className="navbar-menu">
+        <ul className={`navbar-menu ${showMobileMenu ? 'navbar-menu-open' : ''}`}>
           <li>
-            <NavLink to="/" end className={({ isActive }) => (isActive ? 'active' : '')}>Trang Chủ</NavLink>
+            <NavLink to="/" end onClick={() => setShowMobileMenu(false)} className={({ isActive }) => (isActive ? 'active' : '')}>Trang Chủ</NavLink>
           </li>
           <li>
-            <NavLink to="/tournaments" className={({ isActive }) => (isActive ? 'active' : '')}>Giải Đấu</NavLink>
+            <NavLink to="/tournaments" onClick={() => setShowMobileMenu(false)} className={({ isActive }) => (isActive ? 'active' : '')}>Giải Đấu</NavLink>
           </li>
           <li>
-            <NavLink to="/races" className={({ isActive }) => (isActive ? 'active' : '')}>Lịch Đua & Cá Cược</NavLink>
+            <NavLink to="/races" onClick={() => setShowMobileMenu(false)} className={({ isActive }) => (isActive ? 'active' : '')}>Lịch Đua & Cá Cược</NavLink>
           </li>
           <li>
-            <NavLink to="/results" className={({ isActive }) => (isActive ? 'active' : '')}>Kết Quả & BXH</NavLink>
+            <NavLink to="/results" onClick={() => setShowMobileMenu(false)} className={({ isActive }) => (isActive ? 'active' : '')}>Kết Quả & BXH</NavLink>
           </li>
         </ul>
 
@@ -113,6 +115,14 @@ const ClientNavbar = () => {
               Đăng nhập
             </Link>
           )}
+
+          <button
+            className="mobile-menu-toggle"
+            onClick={() => setShowMobileMenu(!showMobileMenu)}
+            aria-label="Mở menu"
+          >
+            {showMobileMenu ? <FiX size={24} /> : <FiMenu size={24} />}
+          </button>
         </div>
       </div>
     </nav>

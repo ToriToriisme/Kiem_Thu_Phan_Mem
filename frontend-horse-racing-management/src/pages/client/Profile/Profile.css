@@ -550,3 +550,38 @@
         flex-direction: column;
     }
 }
+
+@media (max-width: 480px) {
+    .pf-container {
+        padding: 24px 12px;
+    }
+
+    .pf-header-banner {
+        padding: 24px 20px;
+        border-radius: 18px;
+    }
+
+    .pf-avatar {
+        width: 80px;
+        height: 80px;
+        font-size: 2rem;
+    }
+
+    .pf-name {
+        font-size: 1.5rem;
+    }
+
+    .pf-tags {
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .pf-tag {
+        padding: 6px 14px;
+        font-size: 0.85rem;
+    }
+
+    .pf-sidebar {
+        padding: 16px 0;
+    }
+}
