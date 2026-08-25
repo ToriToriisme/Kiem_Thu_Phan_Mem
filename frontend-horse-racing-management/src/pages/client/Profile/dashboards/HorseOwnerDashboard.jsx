@@ -19,25 +19,27 @@ const HorseOwnerDashboard = () => {
     const [regForm, setRegForm] = useState({ tournamentId: '', horseId: '', jockeyId: '' });
     const [isRegSubmitting, setIsRegSubmitting] = useState(false);
 
+    // --- THÊM STATE CHO MODAL SỬA ---
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingHorse, setEditingHorse] = useState(null);
+    const [isEditSubmitting, setIsEditSubmitting] = useState(false);
+    const MAX_HORSE_AGE = 30; // Giới hạn tuổi để qua môn
+
     // Fetch dữ liệu từ API
     const fetchDashboardData = async () => {
         try {
             setLoading(true);
             
-            // SỬA: Thay apiClient bằng axiosClient và bỏ .data vì interceptor đã xử lý
             const userRes = await axiosClient.get('/auth/me');
             setUserInfo(userRes);
             
-            // SỬA: Truyền trực tiếp userRes.id
             const horsesRes = await axiosClient.get(`/v1/horses/owner/${userRes.id}`);
             setMyHorses(horsesRes);
             
-            // THÊM MỚI: Lấy danh sách yêu cầu của Chủ Ngựa
             const requestsRes = await axiosClient.get(`/v1/registrations/owner/${userRes.id}/requests`);
             setJockeyRequests(requestsRes);
         } catch (err) {
             console.error("Lỗi tải dữ liệu:", err);
-            // Giữ mock data nếu lỗi
         } finally {
             setLoading(false);
         }
@@ -66,8 +68,6 @@ const HorseOwnerDashboard = () => {
         e.preventDefault();
         try {
             setIsSubmitting(true);
-            
-            // SỬA: Thay apiClient bằng axiosClient
             await axiosClient.post('/v1/horses', {
                 ...newHorse,
                 age: parseInt(newHorse.age),
@@ -85,6 +85,37 @@ const HorseOwnerDashboard = () => {
         }
     };
 
+    // --- HÀM MỞ MODAL SỬA ---
+    const openEditModal = (horse) => {
+        setEditingHorse({
+            id: horse.id,
+            name: horse.name || '',
+            age: horse.age || ''
+        });
+        setIsEditModalOpen(true);
+    };
+
+    // --- HÀM XỬ LÝ SỬA NGỰA ---
+    const handleEditHorse = async (e) => {
+        e.preventDefault();
+        try {
+            setIsEditSubmitting(true);
+            await axiosClient.put(`/v1/horses/${editingHorse.id}`, {
+                name: editingHorse.name,
+                age: parseInt(editingHorse.age)
+            });
+            
+            setIsEditModalOpen(false);
+            setEditingHorse(null);
+            await fetchDashboardData();
+        } catch (err) {
+            console.error("Lỗi khi sửa ngựa:", err);
+            alert("Có lỗi xảy ra khi sửa thông tin ngựa.");
+        } finally {
+            setIsEditSubmitting(false);
+        }
+    };
+
     const handleRegister = async (e) => {
         e.preventDefault();
         try {
@@ -93,7 +124,7 @@ const HorseOwnerDashboard = () => {
             alert("🎉 Đăng ký thành công! Đã gửi lời mời đến Jockey.");
             setIsRegModalOpen(false);
             setRegForm({ tournamentId: '', horseId: '', jockeyId: '' });
-            await fetchDashboardData(); // Refresh data ngay lập tức
+            await fetchDashboardData(); 
         } catch (error) {
             console.error(error);
             alert(error.response?.data?.message || error.response?.data || "Đã có lỗi xảy ra!");
@@ -103,17 +134,12 @@ const HorseOwnerDashboard = () => {
     };
 
     const renderOwnerRefereeResult = (results, horseId) => {
-        if (results === null) {
-            return 'Đang tải...';
-        }
-        if (!results || results.length === 0) {
-            return 'Chưa có kết quả';
-        }
+        if (results === null) return 'Đang tải...';
+        if (!results || results.length === 0) return 'Chưa có kết quả';
 
         const filtered = results.filter((result) => result.horseId === horseId || result.horseName === 'Tia chớp' || result.horseName === 'Tia Chớp');
-        if (filtered.length === 0) {
-            return 'Chưa có kết quả';
-        }
+        if (filtered.length === 0) return 'Chưa có kết quả';
+        
         return filtered.map((result) => `${result.position}. ${result.horseName || result.horseId}`).join(', ');
     };
 
@@ -176,7 +202,14 @@ const HorseOwnerDashboard = () => {
                                         </span>
                                     </td>
                                     <td>
-                                        <button className="btn-secondary btn-sm">Chi tiết</button>
+                                        {/* ĐÃ ĐỔI NÚT CHI TIẾT THÀNH SỬA VÀ GẮN HÀM MỞ MODAL */}
+                                        <button 
+                                            className="btn-secondary btn-sm"
+                                            onClick={() => openEditModal(horse)}
+                                            style={{ backgroundColor: '#e2e8f0', color: '#2d3748', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: '500' }}
+                                        >
+                                            Sửa
+                                        </button>
                                     </td>
                                 </tr>
                             )) : (
@@ -234,7 +267,7 @@ const HorseOwnerDashboard = () => {
                 </div>
             </div>
 
-           {/* MODAL THÊM NGỰA MỚI */}
+            {/* MODAL THÊM NGỰA MỚI */}
             {isModalOpen && (
                 <div style={{
                     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -274,6 +307,7 @@ const HorseOwnerDashboard = () => {
                                     type="number" 
                                     required
                                     min="1"
+                                    max={MAX_HORSE_AGE}
                                     style={{
                                         width: '100%', padding: '10px 12px', border: '1px solid #cbd5e0', 
                                         borderRadius: '6px', outline: 'none', boxSizing: 'border-box'
@@ -282,6 +316,9 @@ const HorseOwnerDashboard = () => {
                                     onChange={(e) => setNewHorse({...newHorse, age: e.target.value})}
                                     placeholder="Ví dụ: 3"
                                 />
+                                <p style={{ fontSize: '12px', color: '#718096', marginTop: '6px', marginBottom: 0 }}>
+                                    Nhập tuổi hợp lý từ 1 đến {MAX_HORSE_AGE} (tuổi thọ trung bình của ngựa đua).
+                                </p>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
                                 <button 
@@ -311,7 +348,86 @@ const HorseOwnerDashboard = () => {
                 </div>
             )}
 
-            {/* MODAL ĐĂNG KÝ GIẢI ĐẤU */}
+            {/* --- MODAL SỬA NGỰA CHUẨN XỊN --- */}
+            {isEditModalOpen && editingHorse && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    zIndex: 9999
+                }}>
+                    <div style={{
+                        backgroundColor: '#fff', padding: '24px', borderRadius: '8px',
+                        width: '100%', maxWidth: '400px', boxShadow: '0 10px 15px rgba(0,0,0,0.1)'
+                    }}>
+                        <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#333', marginTop: 0, marginBottom: '20px' }}>
+                            Sửa thông tin ngựa
+                        </h3>
+                        <form onSubmit={handleEditHorse}>
+                            <div style={{ marginBottom: '16px' }}>
+                                <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#4a5568', marginBottom: '8px' }}>
+                                    Tên ngựa
+                                </label>
+                                <input 
+                                    type="text" 
+                                    required
+                                    style={{
+                                        width: '100%', padding: '10px 12px', border: '1px solid #cbd5e0', 
+                                        borderRadius: '6px', outline: 'none', boxSizing: 'border-box'
+                                    }}
+                                    value={editingHorse.name}
+                                    onChange={(e) => setEditingHorse({...editingHorse, name: e.target.value})}
+                                />
+                            </div>
+                            <div style={{ marginBottom: '24px' }}>
+                                <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#4a5568', marginBottom: '8px' }}>
+                                    Tuổi
+                                </label>
+                                <input 
+                                    type="number" 
+                                    required
+                                    min="1"
+                                    max={MAX_HORSE_AGE}
+                                    style={{
+                                        width: '100%', padding: '10px 12px', border: '1px solid #cbd5e0', 
+                                        borderRadius: '6px', outline: 'none', boxSizing: 'border-box'
+                                    }}
+                                    value={editingHorse.age}
+                                    onChange={(e) => setEditingHorse({...editingHorse, age: e.target.value})}
+                                />
+                                <p style={{ fontSize: '12px', color: '#718096', marginTop: '6px', marginBottom: 0 }}>
+                                    Nhập tuổi hợp lý từ 1 đến {MAX_HORSE_AGE} (tuổi thọ trung bình của ngựa đua).
+                                </p>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                                <button 
+                                    type="button" 
+                                    onClick={() => { setIsEditModalOpen(false); setEditingHorse(null); }}
+                                    style={{
+                                        padding: '8px 16px', border: '1px solid #cbd5e0', backgroundColor: '#f7fafc',
+                                        color: '#4a5568', borderRadius: '6px', cursor: 'pointer', fontWeight: '500'
+                                    }}
+                                >
+                                    Hủy
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    disabled={isEditSubmitting}
+                                    style={{
+                                        padding: '8px 16px', border: 'none', backgroundColor: '#3182ce',
+                                        color: 'white', borderRadius: '6px', cursor: isEditSubmitting ? 'not-allowed' : 'pointer',
+                                        opacity: isEditSubmitting ? 0.7 : 1, fontWeight: '500'
+                                    }}
+                                >
+                                    {isEditSubmitting ? 'Đang lưu...' : 'Lưu thay đổi'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL ĐĂNG KÝ GIẢI ĐẤU (GIỮ NGUYÊN) */}
             {isRegModalOpen && (
                 <div style={{
                     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
