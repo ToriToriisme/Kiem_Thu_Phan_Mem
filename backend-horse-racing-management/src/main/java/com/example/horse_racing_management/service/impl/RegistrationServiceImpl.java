@@ -82,7 +82,20 @@ public class RegistrationServiceImpl implements RegistrationService {
         List<String> horseIds = ownerHorses.stream().map(Horse::getId).collect(Collectors.toList());
         List<Registration> registrations = registrationRepository.findByHorseIdIn(horseIds);
 
-        return registrations.stream().map(this::buildScheduleDTO).collect(Collectors.toList());
+        return registrations.stream()
+                .map(reg -> {
+                    try {
+                        return buildScheduleDTO(reg);
+                    } catch (Exception e) {
+                        // Dữ liệu không đồng bộ (VD: Tournament/Race/Horse liên quan đã bị xoá) -
+                        // bỏ qua đúng bản ghi này thay vì làm sập toàn bộ danh sách yêu cầu đăng ký.
+                        System.err.println("[getOwnerRegistrations] Bỏ qua registration " + reg.getId()
+                                + " do dữ liệu không đồng bộ: " + e.getMessage());
+                        return null;
+                    }
+                })
+                .filter(java.util.Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     private JockeyScheduleDTO buildScheduleDTO(Registration reg) {
