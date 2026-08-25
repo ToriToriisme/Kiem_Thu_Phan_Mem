@@ -1,0 +1,38 @@
+services:
+  mongodb:
+    image: mongo:7
+    container_name: horse-racing-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-changeme}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE:-horse_racing_db}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: horse-racing-app
+    restart: unless-stopped
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      # Overrides application.properties' hardcoded value.
+      # Do NOT commit real credentials here; use a .env file (see .env.example).
+      SPRING_DATA_MONGODB_URI: mongodb://${MONGO_ROOT_USERNAME:-root}:${MONGO_ROOT_PASSWORD:-changeme}@mongodb:27017/${MONGO_DATABASE:-horse_racing_db}?authSource=admin
+      SPRING_DATA_MONGODB_DATABASE: ${MONGO_DATABASE:-horse_racing_db}
+    ports:
+      - "8080:8080"
+
+volumes:
+  mongodb_data:
