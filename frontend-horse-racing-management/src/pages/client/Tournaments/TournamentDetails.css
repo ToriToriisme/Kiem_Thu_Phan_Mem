@@ -72,7 +72,7 @@
 }
 
 .td-title {
-    font-size: 2.8rem;
+    font-size: clamp(1.8rem, 6vw, 2.8rem);
     font-weight: 800;
     margin: 0 0 16px 0;
     letter-spacing: -0.5px;
@@ -267,4 +267,47 @@
 @keyframes td-spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+    .td-container {
+        padding: 20px 16px;
+    }
+
+    .td-header-banner {
+        padding: 28px 20px;
+    }
+
+    .td-meta-bar {
+        gap: 16px;
+        padding: 14px 16px;
+    }
+
+    .td-section {
+        padding: 20px;
+    }
+
+    /* Card giờ đua đang xếp ngang 3 phần, chật trên mobile -> xếp dọc */
+    .td-race-card {
+        flex-direction: column;
+    }
+
+    .td-race-time {
+        min-width: 0;
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+        flex-direction: row;
+        gap: 8px;
+        padding: 14px 20px;
+    }
+
+    .td-race-action {
+        border-left: none;
+        border-top: 1px solid #f3f4f6;
+        padding: 16px 20px;
+    }
+
+    .td-race-action .td-btn-outline {
+        width: 100%;
+    }
 }

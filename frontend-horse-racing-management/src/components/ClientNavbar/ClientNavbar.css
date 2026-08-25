@@ -249,3 +249,102 @@
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ===================== RESPONSIVE ===================== */
+
+.mobile-menu-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #111827;
+  cursor: pointer;
+  padding: 4px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Máy tính bảng: bỏ ô tìm kiếm cố định 220px để menu + action không bị chen chúc */
+@media (max-width: 900px) {
+  .search-bar-client {
+    display: none;
+  }
+}
+
+/* Tablet trở xuống: chuyển menu chính sang dạng hamburger */
+@media (max-width: 768px) {
+  .navbar-container {
+    padding: 0 16px;
+  }
+
+  .navbar-menu {
+    display: none;
+    position: fixed;
+    top: 72px;
+    left: 0;
+    width: 100%;
+    flex-direction: column;
+    gap: 0;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    height: auto;
+    max-height: calc(100vh - 72px);
+    overflow-y: auto;
+  }
+
+  .navbar-menu.navbar-menu-open {
+    display: flex;
+  }
+
+  .navbar-menu li {
+    height: auto;
+    width: 100%;
+  }
+
+  .navbar-menu a {
+    width: 100%;
+    padding: 16px 20px;
+    height: auto;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .navbar-menu a.active::after {
+    display: none;
+  }
+
+  .navbar-menu a.active {
+    background: #f9fafb;
+  }
+
+  .navbar-actions {
+    gap: 8px;
+  }
+
+  .mobile-menu-toggle {
+    display: flex;
+  }
+}
+
+/* Điện thoại (375px) */
+@media (max-width: 480px) {
+  .navbar-container {
+    padding: 0 12px;
+  }
+
+  .navbar-logo {
+    font-size: 1.1rem;
+  }
+
+  .navbar-actions {
+    gap: 4px;
+  }
+
+  .icon-btn-client {
+    padding: 6px;
+  }
+
+  .user-dropdown-menu {
+    width: 200px;
+    right: -12px;
+  }
+}

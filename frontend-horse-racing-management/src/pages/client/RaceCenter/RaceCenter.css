@@ -349,3 +349,42 @@
     70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
     100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
+
+/* ===================== RESPONSIVE ===================== */
+
+@media (max-width: 768px) {
+    .rc-container {
+        padding: 24px 16px;
+    }
+
+    .rc-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .rc-header p {
+        font-size: 1rem;
+    }
+
+    .rc-tabs-container {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .rc-tab-btn {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+    }
+
+    .rc-races-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .rc-bet-modal-backdrop {
+        padding: 16px;
+    }
+
+    .rc-bet-modal {
+        max-height: calc(100vh - 32px);
+        overflow-y: auto;
+    }
+}

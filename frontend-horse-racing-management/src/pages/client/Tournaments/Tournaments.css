@@ -13,7 +13,7 @@
 }
 
 .tm-title {
-    font-size: 2.5rem;
+    font-size: clamp(1.8rem, 6vw, 2.5rem);
     font-weight: 800;
     color: #111827;
     margin-bottom: 12px;
@@ -202,4 +202,23 @@
 @keyframes tm-spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+    .tm-container {
+        padding: 32px 16px;
+    }
+
+    .tm-header {
+        margin-bottom: 32px;
+    }
+
+    .tm-card {
+        padding: 20px;
+    }
+
+    .tm-card-header {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
 }

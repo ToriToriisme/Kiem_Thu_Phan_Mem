@@ -149,3 +149,14 @@
     transform: rotate(360deg);
   }
 }
+
+@media (max-width: 768px) {
+  .race-details-container {
+    padding: 16px;
+  }
+
+  .race-details-card {
+    padding: 18px;
+    border-radius: 18px;
+  }
+}
